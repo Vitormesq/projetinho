@@ -1,12 +1,12 @@
 "use client";
-import { Check, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import React from "react";
-import { Label } from "./ui/label";
-import { Input } from "./ui/ace-input";
-import { Textarea } from "./ui/ace-textarea";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/ace-input";
+import { Textarea } from "@/components/ui/ace-textarea";
 import { cn } from "@/lib/utils";
-import { useToast } from "./ui/use-toast";
-import { Button } from "./ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 const ContactForm = () => {
@@ -36,8 +36,8 @@ const ContactForm = () => {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       toast({
-        title: "Thank you!",
-        description: "I'll get back to you as soon as possible.",
+        title: "Obrigado!",
+        description: "Entrarei em contato com você o mais rápido possível.",
         variant: "default",
         className: cn("top-0 mx-auto flex fixed md:top-4 md:right-4"),
       });
@@ -51,8 +51,8 @@ const ContactForm = () => {
       }, 1000);
     } catch (err) {
       toast({
-        title: "Error",
-        description: "Something went wrong! Please check the fields.",
+        title: "Erro",
+        description: "Algo deu errado! Por favor, verifique os campos.",
         className: cn(
           "top-0 w-full flex justify-center fixed md:max-w-7xl md:top-4 md:right-4"
         ),
@@ -65,10 +65,10 @@ const ContactForm = () => {
     <form className="min-w-7xl mx-auto sm:mt-4" onSubmit={handleSubmit}>
       <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4">
         <LabelInputContainer>
-          <Label htmlFor="fullname">Full name</Label>
+          <Label htmlFor="fullname">Nome Completo</Label>
           <Input
             id="fullname"
-            placeholder="Your Name"
+            placeholder="Seu Nome"
             type="text"
             required
             value={fullName}
@@ -76,10 +76,10 @@ const ContactForm = () => {
           />
         </LabelInputContainer>
         <LabelInputContainer className="mb-4">
-          <Label htmlFor="email">Email Address</Label>
+          <Label htmlFor="email">Endereço de E-mail</Label>
           <Input
             id="email"
-            placeholder="you@example.com"
+            placeholder="voce@exemplo.com"
             type="email"
             required
             value={email}
@@ -88,16 +88,16 @@ const ContactForm = () => {
         </LabelInputContainer>
       </div>
       <div className="grid w-full gap-1.5 mb-4">
-        <Label htmlFor="content">Your Message</Label>
+        <Label htmlFor="content">Sua Mensagem</Label>
         <Textarea
-          placeholder="Tell me about about your project,"
+          placeholder="Conte-me sobre o seu projeto,"
           id="content"
           required
           value={message}
           onChange={(e) => setMessage(e.target.value)}
         />
         <p className="text-sm text-muted-foreground">
-          I&apos;ll never share your data with anyone else. Pinky promise!
+          Eu nunca compartilharei seus dados com ninguém. Prometo!
         </p>
       </div>
       <Button
@@ -108,11 +108,11 @@ const ContactForm = () => {
         {loading ? (
           <div className="flex items-center justify-center">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            <p>Please wait</p>
+            <p>Por favor, aguarde</p>
           </div>
         ) : (
           <div className="flex items-center justify-center">
-            Send Message <ChevronRight className="w-4 h-4 ml-4" />
+            Enviar Mensagem <ChevronRight className="w-4 h-4 ml-4" />
           </div>
         )}
         <BottomGradient />
