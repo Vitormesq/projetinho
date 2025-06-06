@@ -199,13 +199,13 @@ function Page() {
           >
             <h1 className="text-3xl mb-10 lg:md-20">Sobre mim</h1>
             <p className="mb-10 text-roboto">
-              Olá! Eu sou o Vitor, um Engenheiro da Computação com 1.5 anos de
-              experiência em Desenvolvimento, DevOps e gerenciamento de Banco de
-              Dados. Tenho experiência prática em implantação e automação de
-              fluxos de trabalho, e em colaboração com clientes estrangeiros.
-              Possuo fortes habilidades analíticas, comunicação eficaz e uma
-              abordagem orientada para a equipe para impulsionar melhorias de
-              processo e entregar resultados.
+              Olá! Eu sou o Vitor, um Devenvolvedor com 1.5 anos de experiência
+              em Desenvolvimento, DevOps e gerenciamento de Banco de Dados.
+              Tenho experiência prática em implantação e automação de fluxos de
+              trabalho, e em colaboração com clientes estrangeiros. Possuo
+              fortes habilidades analíticas, comunicação eficaz e uma abordagem
+              orientada para a equipe para impulsionar melhorias de processo e
+              entregar resultados.
             </p>
             <p className="mb-10">
               Quando não estou codando, você pode me encontrar explorando novas
