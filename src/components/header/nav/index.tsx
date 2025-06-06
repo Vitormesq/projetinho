@@ -43,7 +43,7 @@ const Index: React.FC<IndexProps> = ({ setIsActive }) => {
           {/* <Footer /> */}
         </div>
 
-        {/* A LINHA ABAIXO FOI REMOVIDA PARA TIRAR A IMAGEM DE PREVIEW */}
+        {/* A PARTE COMENTADA ABAIXO REMOVE A IMAGEM DE TODOS OS LINKS */}
         {/* <Image
           src={links[selectedLink.index].thumbnail}
           isActive={selectedLink.isActive}
