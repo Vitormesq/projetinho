@@ -1,12 +1,5 @@
 const footer: { title: string; href: string }[] = [
-  {
-    title: "Blog",
-    href: "https://abhijitzende.hashnode.dev/",
-  },
-  {
-    title: "Newsletter",
-    href: "https://abhijitzende.hashnode.dev/",
-  },
+  // Links de Blog e Newsletter removidos
 ];
 
 export { footer };

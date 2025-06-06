@@ -1,7 +1,7 @@
 const config = {
   title: "Vitor Mesquita | Entusiasta de DevOps",
   description: {
-    long: "Explore o portfólio de Vitor Mesquita, um Engenheiro da Computação com 1.5 anos de experiência em Desenvolvimento, DevOps & e gerenciamento de Banco de Dados com experiência prática em implantação e automação de fluxos de trabalho, & e colaboração com clientes estrangeiros. Fortes habilidades analíticas, comunicação eficaz, e uma abordagem orientada para a equipe para impulsionar melhorias de processo e entregar resultados.",
+    long: "Explore o portfólio de Vitor Mesquita, um Desenvolvedor com 1.5 anos de experiência em Desenvolvimento, DevOps & e gerenciamento de Banco de Dados com experiência prática em implantação e automação de fluxos de trabalho, & e colaboração com clientes estrangeiros. Fortes habilidades analíticas, comunicação eficaz, e uma abordagem orientada para a equipe para impulsionar melhorias de processo e entregar resultados.",
     short:
       "Descubra o portfólio de Vitor Mesquita, um entusiasta de DevOps resolvendo problemas da vida real em DevOps e Desenvolvimento.",
   },
@@ -23,7 +23,7 @@ const config = {
     "Azure",
   ],
   author: "Vitor Mesquita",
-  email: "abhijitzende75@gmail.com",
+  email: "abcvitormesquita@gmail.com", // E-MAIL ATUALIZADO
   site: "https://vitormesquita.com", // Atualize para o seu domínio
 
   get ogImg() {

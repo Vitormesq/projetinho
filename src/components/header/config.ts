@@ -21,11 +21,7 @@ const links: Link[] = [
     href: "/#projects",
     thumbnail: "/assets/nav-link-previews/projects.png",
   },
-  {
-    title: "Blog",
-    href: "/blogs",
-    thumbnail: "/assets/nav-link-previews/blog.png",
-  },
+  // O link do blog foi removido daqui
   {
     title: "Contato",
     href: "/#contact",
