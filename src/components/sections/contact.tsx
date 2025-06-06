@@ -1,54 +1,147 @@
 "use client";
+import { ChevronRight, Loader2 } from "lucide-react";
 import React from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import ContactForm from "../ContactForm";
-import Link from "next/link";
+import { Label } from "./ui/label";
+import { Input } from "./ui/ace-input";
+import { Textarea } from "./ui/ace-textarea";
 import { cn } from "@/lib/utils";
-import { config } from "@/data/config";
-const ContactSection = () => {
+import { useToast } from "./ui/use-toast";
+import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
+
+const ContactForm = () => {
+  const [fullName, setFullName] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [message, setMessage] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch("/api/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullName,
+          email,
+          message,
+        }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      toast({
+        title: "Obrigado!",
+        description: "Entrarei em contato com você o mais rápido possível.",
+        variant: "default",
+        className: cn("top-0 mx-auto flex fixed md:top-4 md:right-4"),
+      });
+      setLoading(false);
+      setFullName("");
+      setEmail("");
+      setMessage("");
+      const timer = setTimeout(() => {
+        router.push("/");
+        clearTimeout(timer);
+      }, 1000);
+    } catch (err) {
+      toast({
+        title: "Erro",
+        description: "Algo deu errado! Por favor, verifique os campos.",
+        className: cn(
+          "top-0 w-full flex justify-center fixed md:max-w-7xl md:top-4 md:right-4"
+        ),
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
   return (
-    <section id="contact" className="min-h-screen max-w-7xl mx-auto ">
-      <Link href={"#contact"}>
-        <h2
-          className={cn(
-            "bg-clip-text text-4xl text-center text-transparent md:text-7xl pt-16",
-            "bg-gradient-to-b from-black/80 to-black/50",
-            "dark:bg-gradient-to-b dark:from-white/80 dark:to-white/20 dark:bg-opacity-50"
-          )}
-        >
-          LET&apos;S WORK <br />
-          TOGETHER
-        </h2>
-      </Link>
-      <div className="grid grid-cols-1 md:grid-cols-2 z-[9999]">
-        <Card className="min-w-7xl bg-white/70 dark:bg-black/70 backdrop-blur-sm rounded-xl mt-10 md:mt-20">
-          <CardHeader>
-            <CardTitle className="text-4xl">Contact Form</CardTitle>
-            <CardDescription>
-              Please contact me directly at{" "}
-              <a
-                target="_blank"
-                href={`mailto:${config.email}`}
-                className="text-gray-200 cursor-can-hover rounded-lg"
-              >
-                {config.email.replace(/@/g, "(at)")}
-              </a>{" "}
-              or drop your info here.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ContactForm />
-          </CardContent>
-        </Card>
+    <form className="min-w-7xl mx-auto sm:mt-4" onSubmit={handleSubmit}>
+      <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4">
+        <LabelInputContainer>
+          <Label htmlFor="fullname">Nome Completo</Label>
+          <Input
+            id="fullname"
+            placeholder="Seu Nome"
+            type="text"
+            required
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+          />
+        </LabelInputContainer>
+        <LabelInputContainer className="mb-4">
+          <Label htmlFor="email">Endereço de E-mail</Label>
+          <Input
+            id="email"
+            placeholder="voce@exemplo.com"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </LabelInputContainer>
       </div>
-    </section>
+      <div className="grid w-full gap-1.5 mb-4">
+        <Label htmlFor="content">Sua Mensagem</Label>
+        <Textarea
+          placeholder="Conte-me sobre o seu projeto,"
+          id="content"
+          required
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+        <p className="text-sm text-muted-foreground">
+          Eu nunca compartilharei seus dados com ninguém. Prometo!
+        </p>
+      </div>
+      <Button
+        disabled={loading}
+        className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+        type="submit"
+      >
+        {loading ? (
+          <div className="flex items-center justify-center">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <p>Por favor, aguarde</p>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center">
+            Enviar Mensagem <ChevronRight className="w-4 h-4 ml-4" />
+          </div>
+        )}
+        <BottomGradient />
+      </Button>
+    </form>
   );
 };
-export default ContactSection;
+
+export default ContactForm;
+
+const LabelInputContainer = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  return (
+    <div className={cn("flex flex-col space-y-2 w-full", className)}>
+      {children}
+    </div>
+  );
+};
+
+const BottomGradient = () => {
+  return (
+    <>
+      <span className="group-hover/btn:opacity-100 block transition duration-500 opacity-0 absolute h-px w-full -bottom-px inset-x-0 bg-gradient-to-r from-transparent via-brand to-transparent" />
+      <span className="group-hover/btn:opacity-100 blur-sm block transition duration-500 opacity-0 absolute h-px w-1/2 mx-auto -bottom-px inset-x-10 bg-gradient-to-r from-transparent orange-400 to-transparent" />
+    </>
+  );
+};

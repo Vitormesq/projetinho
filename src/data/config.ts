@@ -1,48 +1,39 @@
 const config = {
-  title: "Abhijit Zende | DevOps Enthusiast",
+  title: "Vitor Mesquita | Entusiasta de DevOps",
   description: {
-    long: "Explore the portfolio of Abhijit, a Computer Science Engineer with 1.5 year experience in Devlopment, DevOps & Database management with hands-on experience in deploying & automating workflows, & collaborating with foreign clients. Strong analytical skills, effective communication, and a team-oriented approach to driving process improvements and delivering results.",
+    long: "Explore o portfólio de Vitor Mesquita, um Engenheiro da Computação com 1.5 anos de experiência em Desenvolvimento, DevOps & e gerenciamento de Banco de Dados com experiência prática em implantação e automação de fluxos de trabalho, & e colaboração com clientes estrangeiros. Fortes habilidades analíticas, comunicação eficaz, e uma abordagem orientada para a equipe para impulsionar melhorias de processo e entregar resultados.",
     short:
-      "Discover the portfolio of Abhijit, a DevOps enthusiast solving real life problems in DevOps and Development.",
+      "Descubra o portfólio de Vitor Mesquita, um entusiasta de DevOps resolvendo problemas da vida real em DevOps e Desenvolvimento.",
   },
   keywords: [
-    "Abhijit",
-    "Abhijit Zende",
-    "abhijitzende",
-    "abhijitzende.com",
-    "Abhijit Zende portfolio",
-    "portfolio",
+    "Vitor Mesquita",
+    "vitor mesquita",
+    "vitormesquita.com",
+    "Vitor Mesquita portfolio",
+    "portfólio",
     "DevOps",
-    "Devlopment",
-    "Database",
-    "AI Docker file optimizer",
-    "Finance me",
-    "creative technologist",
-    "web development",
-    "interactive websites",
-    // "GSAP",
-    // "React",
-    // "Next.js",
-    // "Spline",
-    // "Framer Motion",
+    "Desenvolvimento",
+    "Banco de Dados",
+    "desenvolvedor criativo",
+    "desenvolvimento web",
+    "sites interativos",
     "AWS",
     "DevSecOps",
     "AIOps",
     "Azure",
   ],
-  author: "Abhijit Zende",
+  author: "Vitor Mesquita",
   email: "abhijitzende75@gmail.com",
-  site: "https://abhijitzende.com",
+  site: "https://vitormesquita.com", // Atualize para o seu domínio
 
   get ogImg() {
     return this.site + "/assets/seo/og-image.png";
   },
   social: {
-    twitter: "https://x.com/_Abhi_Speaks/",
-    linkedin: "https://www.linkedin.com/in/zende-abhijit/",
-    instagram: "https://www.instagram.com/_.celestial_abhi._/",
-    facebook: "https://www.facebook.com/profile.php?id=100010029821759",
-    github: "https://github.com/Abhiz2411/",
+    linkedin:
+      "https://www.linkedin.com/in/vitor-mesquita-de-oliveira-bb958724a/",
+    instagram: "https://www.instagram.com/vitor.mesqui/",
+    github: "https://github.com/Vitormesq/",
   },
 };
 export { config };
