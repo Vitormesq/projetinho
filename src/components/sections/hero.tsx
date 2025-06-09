@@ -62,7 +62,8 @@ const HeroSection = () => {
                         side="top"
                         className="dark:bg-white dark:text-black"
                       >
-                        Tem algo esperando por você nas ferramentas de desenvolvedor
+                        Tem algo esperando por você nas ferramentas de
+                        desenvolvedor
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -97,26 +98,17 @@ const HeroSection = () => {
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  <Link
-                    href={config.social.github}
-                    target="_blank"
-                  >
+                  <Link href={config.social.github} target="_blank">
                     <Button variant={"outline"}>
                       <SiGithub size={24} />
                     </Button>
                   </Link>
-                  <Link
-                    href={config.social.linkedin}
-                    target="_blank"
-                  >
+                  <Link href={config.social.linkedin} target="_blank">
                     <Button variant={"outline"}>
                       <SiLinkedin size={24} />
                     </Button>
                   </Link>
-                  <Link
-                    href={config.social.instagram}
-                    target="_blank"
-                  >
+                  <Link href={config.social.instagram} target="_blank">
                     <Button variant={"outline"}>
                       <SiInstagram size={24} />
                     </Button>
@@ -128,4 +120,11 @@ const HeroSection = () => {
         </div>
         <div className="grid col-span-1"></div>
       </div>
-      <div
+      <div className="absolute bottom-10 left-[50%] translate-x-[-50%]">
+        <ScrollDownIcon />
+      </div>
+    </section>
+  );
+};
+
+export default HeroSection;
