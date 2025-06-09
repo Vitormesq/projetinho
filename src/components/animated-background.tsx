@@ -57,71 +57,57 @@ const AnimatedBackground = () => {
   const splineContainer = useRef<HTMLDivElement>(null);
   const [splineApp, setSplineApp] = useState<Application>();
   const [activeSection, setActiveSection] = useState<Section>("hero");
+  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [keyboardRevealed, setKeyboardRevealed] = useState(false);
   const router = useRouter();
 
-  const handleSetActiveSection = useCallback(
-    (section: Section) => {
-      setActiveSection(section);
-      const hash = section === "hero" ? "" : `#${section}`;
-      router.push("/" + hash, { scroll: false });
-    },
-    [router]
-  );
+  // Todas as funções e hooks são declarados aqui no topo
+  const keyboardStates = useCallback((section: Section) => {
+    // Para mobile, sempre usamos a config de desktop para evitar erros, mas o componente não será renderizado
+    return STATES[section]?.desktop;
+  }, []);
 
-  // Função que faz os ícones aparecerem
-  const revealKeyCaps = useCallback(
-    async (spline: Application) => {
-      if (keyboardRevealed || isMobile) return;
-      const kbd = spline.findObjectByName("keyboard");
-      if (!kbd) return;
-
-      kbd.visible = true;
-      setKeyboardRevealed(true);
-
-      gsap.fromTo(
-        kbd.scale,
-        { x: 0.01, y: 0.01, z: 0.01 },
-        {
-          x: STATES.hero.desktop.scale.x,
-          y: STATES.hero.desktop.scale.y,
-          z: STATES.hero.desktop.scale.z,
-          duration: 1.5,
-          ease: "elastic.out(1, 0.6)",
-        }
-      );
-
-      // CORREÇÃO: Usar Object.values para pegar o nome correto da skill
-      Object.values(SKILLS).forEach(async (skill, idx) => {
-        const keycap = spline.findObjectByName(skill.name);
-        if (keycap) {
-          await sleep(idx * 50);
-          keycap.visible = true;
-          gsap.fromTo(
-            keycap.position,
-            { y: 200 },
-            { y: 50, duration: 0.5, delay: 0.05, ease: "bounce.out" }
-          );
-        }
-      });
-    },
-    [keyboardRevealed, isMobile]
-  );
-
-  // Efeito principal que inicializa tudo
+  // Efeito para atualizar as variáveis do Spline quando uma skill é selecionada
   useEffect(() => {
-    if (splineApp && !isLoading) {
-      revealKeyCaps(splineApp);
+    if (splineApp && activeSection === "skills") {
+      if (selectedSkill) {
+        splineApp.setVariable("heading", selectedSkill.label);
+        splineApp.setVariable("desc", selectedSkill.shortDescription);
+      } else {
+        splineApp.setVariable("heading", "");
+        splineApp.setVariable("desc", "");
+      }
     }
-  }, [splineApp, isLoading, revealKeyCaps]);
+  }, [selectedSkill, splineApp, activeSection]);
 
-  // Efeito que controla as animações de rolagem
+  // Efeito para configurar as animações de scroll
   useEffect(() => {
     if (isMobile || !splineApp) return;
+
     const keyboard = splineApp.findObjectByName("keyboard");
     if (!keyboard) return;
 
-    const targetState = STATES[activeSection]?.desktop;
+    const sections: Section[] = ["hero", "skills", "projects", "contact"];
+    sections.forEach((section) => {
+      ScrollTrigger.create({
+        trigger: `#${section}`,
+        start: "top center",
+        end: "bottom center",
+        onToggle: (self) => self.isActive && setActiveSection(section),
+      });
+    });
+
+    return () => {
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+    };
+  }, [splineApp, isMobile]);
+
+  // Efeito que move o teclado
+  useEffect(() => {
+    if (isMobile || !splineApp || !activeSection) return;
+    const keyboard = splineApp.findObjectByName("keyboard");
+    if (!keyboard) return;
+    const targetState = keyboardStates(activeSection);
     if (targetState) {
       gsap.to(keyboard.scale, {
         ...targetState.scale,
@@ -139,47 +125,43 @@ const AnimatedBackground = () => {
         ease: "power3.inOut",
       });
     }
-  }, [activeSection, splineApp, isMobile]);
+  }, [activeSection, splineApp, isMobile, keyboardStates]);
 
-  // Efeito que configura os gatilhos de rolagem
+  // Efeito para carregar os ícones (keycaps)
   useEffect(() => {
-    if (isMobile || !splineApp) return;
-    const sections = [
-      {
-        id: "#skills",
-        onEnter: () => handleSetActiveSection("skills"),
-        onLeaveBack: () => handleSetActiveSection("hero"),
-      },
-      {
-        id: "#projects",
-        onEnter: () => handleSetActiveSection("projects"),
-        onLeaveBack: () => handleSetActiveSection("skills"),
-      },
-      {
-        id: "#contact",
-        onEnter: () => handleSetActiveSection("contact"),
-        onLeaveBack: () => handleSetActiveSection("projects"),
-      },
-    ];
-    const triggers = sections.map(({ id, onEnter, onLeaveBack }) => {
-      return ScrollTrigger.create({
-        trigger: id,
-        start: "top center",
-        onEnter,
-        onLeaveBack,
-      });
-    });
-    return () => {
-      triggers.forEach((trigger) => trigger.kill());
-    };
-  }, [splineApp, isMobile, handleSetActiveSection]);
+    if (isLoading || keyboardRevealed || !splineApp || isMobile) return;
 
+    const revealKeyCaps = async () => {
+      const kbd = splineApp.findObjectByName("keyboard");
+      if (!kbd) return;
+      kbd.visible = true;
+
+      Object.values(SKILLS).forEach(async (skill, idx) => {
+        const keycap = splineApp.findObjectByName(skill.name);
+        if (keycap) {
+          await sleep(idx * 40);
+          keycap.visible = true;
+          gsap.fromTo(
+            keycap.position,
+            { y: 200 },
+            { y: 50, duration: 0.5, delay: 0.05, ease: "bounce.out" }
+          );
+        }
+      });
+      setKeyboardRevealed(true);
+    };
+
+    revealKeyCaps();
+  }, [isLoading, keyboardRevealed, splineApp, isMobile]);
+
+  // Se for mobile, não renderiza nada pesado
   if (isMobile) {
     return (
       <div className="fixed inset-0 -z-10 bg-gradient-to-tl from-black via-zinc-600/20 to-black" />
     );
   }
 
+  // Renderização final para Desktop
   return (
     <Suspense
       fallback={
@@ -191,6 +173,12 @@ const AnimatedBackground = () => {
           setSplineApp(app);
           bypassLoading();
         }}
+        // Adicionando os listeners de interação aqui
+        onKeyDown={(e) => {
+          const skill = SKILLS[e.target.name as SkillNames];
+          if (skill) setSelectedSkill(skill);
+        }}
+        onKeyUp={() => setSelectedSkill(null)}
         scene="/assets/skills-keyboard.spline"
       />
     </Suspense>
