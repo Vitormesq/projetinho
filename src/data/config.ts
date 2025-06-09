@@ -1,9 +1,9 @@
 const config = {
-  title: "Vitor Mesquita | Entusiasta de DevOps",
+  title: "Vitor Mesquita | Desenvolvedor",
   description: {
     long: "Explore o portfólio de Vitor Mesquita, um Desenvolvedor com 1.5 anos de experiência em Desenvolvimento, DevOps & e gerenciamento de Banco de Dados com experiência prática em implantação e automação de fluxos de trabalho, & e colaboração com clientes estrangeiros. Fortes habilidades analíticas, comunicação eficaz, e uma abordagem orientada para a equipe para impulsionar melhorias de processo e entregar resultados.",
     short:
-      "Descubra o portfólio de Vitor Mesquita, um entusiasta de DevOps resolvendo problemas da vida real em DevOps e Desenvolvimento.",
+      "Descubra o portfólio de Vitor Mesquita, um Desenvolvedor resolvendo problemas da vida real em DevOps e Desenvolvimento.",
   },
   keywords: [
     "Vitor Mesquita",

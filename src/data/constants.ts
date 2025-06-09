@@ -40,7 +40,7 @@ export const SKILLS: Record<SkillNames, Skill> = {
     shortDescription:
       "O primo superdotado do JavaScript que está sempre se exibindo 💯🔒",
     color: "#007acc",
-    icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg",
+    icon: " /typescript/typescript-original.svg",
   },
   [SkillNames.HTML]: {
     id: 3,
