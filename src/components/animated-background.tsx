@@ -6,10 +6,12 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import { Application } from "@splinetool/runtime";
+import { Application, SPEObject, SplineEvent } from "@splinetool/runtime";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 const Spline = React.lazy(() => import("@splinetool/react-spline"));
+import { Skill, SkillNames, SKILLS } from "@/data/constants";
+import { sleep } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { usePreloader } from "./preloader";
 import { useRouter } from "next/navigation";
@@ -50,10 +52,13 @@ const STATES = {
 type Section = "hero" | "skills" | "projects" | "contact";
 
 const AnimatedBackground = () => {
-  const { bypassLoading } = usePreloader();
+  const { isLoading, bypassLoading } = usePreloader();
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const splineContainer = useRef<HTMLDivElement>(null);
   const [splineApp, setSplineApp] = useState<Application>();
   const [activeSection, setActiveSection] = useState<Section>("hero");
+  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
+  const [keyboardRevealed, setKeyboardRevealed] = useState(false);
   const router = useRouter();
 
   const handleSetActiveSection = useCallback(
@@ -64,6 +69,73 @@ const AnimatedBackground = () => {
     },
     [router]
   );
+
+  const handleSplineInteractions = useCallback((spline: Application) => {
+    const handleMouseHover = (e: SplineEvent) => {
+      if (e.target.name === "body" || e.target.name === "platform") {
+        setSelectedSkill(null);
+        spline.setVariable("heading", "");
+        spline.setVariable("desc", "");
+      } else {
+        const skill = SKILLS[e.target.name as SkillNames];
+        if (skill) {
+          setSelectedSkill(skill);
+          spline.setVariable("heading", skill.label);
+          spline.setVariable("desc", skill.shortDescription);
+        }
+      }
+    };
+    spline.addEventListener("mouseHover", handleMouseHover);
+    return () => {
+      spline.removeEventListener("mouseHover", handleMouseHover);
+    };
+  }, []);
+
+  const revealKeyCaps = useCallback(
+    async (spline: Application) => {
+      if (keyboardRevealed) return;
+      const kbd = spline.findObjectByName("keyboard");
+      if (!kbd) return;
+
+      kbd.visible = true;
+      setKeyboardRevealed(true);
+
+      gsap.fromTo(
+        kbd.scale,
+        { x: 0.01, y: 0.01, z: 0.01 },
+        {
+          x: STATES.hero.desktop.scale.x,
+          y: STATES.hero.desktop.scale.y,
+          z: STATES.hero.desktop.scale.z,
+          duration: 1.5,
+          ease: "elastic.out(1, 0.6)",
+        }
+      );
+
+      const allKeycaps = Object.keys(SKILLS);
+      allKeycaps.forEach(async (keyName, idx) => {
+        const keycap = spline.findObjectByName(keyName);
+        if (keycap) {
+          await sleep(idx * 70);
+          keycap.visible = true;
+          gsap.fromTo(
+            keycap.position,
+            { y: 200 },
+            { y: 50, duration: 0.5, delay: 0.1, ease: "bounce.out" }
+          );
+        }
+      });
+    },
+    [keyboardRevealed]
+  );
+
+  useEffect(() => {
+    if (splineApp && !isLoading) {
+      const cleanup = handleSplineInteractions(splineApp);
+      revealKeyCaps(splineApp);
+      return cleanup;
+    }
+  }, [splineApp, isLoading, handleSplineInteractions, revealKeyCaps]);
 
   useEffect(() => {
     if (isMobile || !splineApp) return;
@@ -113,10 +185,7 @@ const AnimatedBackground = () => {
       return ScrollTrigger.create({
         trigger: id,
         start: "top center",
-        end: "bottom center",
         onEnter,
-        onEnterBack: onEnter,
-        onLeave: onLeaveBack,
         onLeaveBack,
       });
     });
@@ -138,6 +207,7 @@ const AnimatedBackground = () => {
       }
     >
       <Spline
+        ref={splineContainer}
         onLoad={(app: Application) => {
           setSplineApp(app);
           bypassLoading();
