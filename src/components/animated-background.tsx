@@ -11,7 +11,6 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 const Spline = React.lazy(() => import("@splinetool/react-spline"));
 import { Skill, SkillNames, SKILLS } from "@/data/constants";
-import { sleep } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { usePreloader } from "./preloader";
 import { useRouter } from "next/navigation";
@@ -54,60 +53,35 @@ type Section = "hero" | "skills" | "projects" | "contact";
 const AnimatedBackground = () => {
   const { isLoading, bypassLoading } = usePreloader();
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const splineContainer = useRef<HTMLDivElement>(null);
   const [splineApp, setSplineApp] = useState<Application>();
   const [activeSection, setActiveSection] = useState<Section>("hero");
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
-  const [keyboardRevealed, setKeyboardRevealed] = useState(false);
   const router = useRouter();
 
-  // Todas as funções e hooks são declarados aqui no topo
-  const keyboardStates = useCallback((section: Section) => {
-    // Para mobile, sempre usamos a config de desktop para evitar erros, mas o componente não será renderizado
-    return STATES[section]?.desktop;
-  }, []);
+  const handleSetActiveSection = useCallback(
+    (section: Section) => {
+      setActiveSection(section);
+      const hash = section === "hero" ? "" : `#${section}`;
+      router.push("/" + hash, { scroll: false });
+    },
+    [router]
+  );
 
-  // Efeito para atualizar as variáveis do Spline quando uma skill é selecionada
+  // Efeitos e lógica...
   useEffect(() => {
-    if (splineApp && activeSection === "skills") {
-      if (selectedSkill) {
-        splineApp.setVariable("heading", selectedSkill.label);
-        splineApp.setVariable("desc", selectedSkill.shortDescription);
-      } else {
-        splineApp.setVariable("heading", "");
-        splineApp.setVariable("desc", "");
-      }
+    if (splineApp && !isLoading) {
+      const keyboard = splineApp.findObjectByName("keyboard");
+      if (keyboard) keyboard.visible = true;
     }
-  }, [selectedSkill, splineApp, activeSection]);
+  }, [splineApp, isLoading]);
 
-  // Efeito para configurar as animações de scroll
   useEffect(() => {
     if (isMobile || !splineApp) return;
 
     const keyboard = splineApp.findObjectByName("keyboard");
     if (!keyboard) return;
 
-    const sections: Section[] = ["hero", "skills", "projects", "contact"];
-    sections.forEach((section) => {
-      ScrollTrigger.create({
-        trigger: `#${section}`,
-        start: "top center",
-        end: "bottom center",
-        onToggle: (self) => self.isActive && setActiveSection(section),
-      });
-    });
-
-    return () => {
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-    };
-  }, [splineApp, isMobile]);
-
-  // Efeito que move o teclado
-  useEffect(() => {
-    if (isMobile || !splineApp || !activeSection) return;
-    const keyboard = splineApp.findObjectByName("keyboard");
-    if (!keyboard) return;
-    const targetState = keyboardStates(activeSection);
+    const targetState = STATES[activeSection]?.desktop;
     if (targetState) {
       gsap.to(keyboard.scale, {
         ...targetState.scale,
@@ -125,43 +99,46 @@ const AnimatedBackground = () => {
         ease: "power3.inOut",
       });
     }
-  }, [activeSection, splineApp, isMobile, keyboardStates]);
+  }, [activeSection, splineApp, isMobile]);
 
-  // Efeito para carregar os ícones (keycaps)
   useEffect(() => {
-    if (isLoading || keyboardRevealed || !splineApp || isMobile) return;
-
-    const revealKeyCaps = async () => {
-      const kbd = splineApp.findObjectByName("keyboard");
-      if (!kbd) return;
-      kbd.visible = true;
-
-      Object.values(SKILLS).forEach(async (skill, idx) => {
-        const keycap = splineApp.findObjectByName(skill.name);
-        if (keycap) {
-          await sleep(idx * 40);
-          keycap.visible = true;
-          gsap.fromTo(
-            keycap.position,
-            { y: 200 },
-            { y: 50, duration: 0.5, delay: 0.05, ease: "bounce.out" }
-          );
-        }
+    if (isMobile || !splineApp) return;
+    const sections = [
+      {
+        id: "#skills",
+        onEnter: () => handleSetActiveSection("skills"),
+        onLeaveBack: () => handleSetActiveSection("hero"),
+      },
+      {
+        id: "#projects",
+        onEnter: () => handleSetActiveSection("projects"),
+        onLeaveBack: () => handleSetActiveSection("skills"),
+      },
+      {
+        id: "#contact",
+        onEnter: () => handleSetActiveSection("contact"),
+        onLeaveBack: () => handleSetActiveSection("projects"),
+      },
+    ];
+    const triggers = sections.map(({ id, onEnter, onLeaveBack }) => {
+      return ScrollTrigger.create({
+        trigger: id,
+        start: "top center",
+        onEnter,
+        onLeaveBack,
       });
-      setKeyboardRevealed(true);
+    });
+    return () => {
+      triggers.forEach((trigger) => trigger.kill());
     };
+  }, [splineApp, isMobile, handleSetActiveSection]);
 
-    revealKeyCaps();
-  }, [isLoading, keyboardRevealed, splineApp, isMobile]);
-
-  // Se for mobile, não renderiza nada pesado
   if (isMobile) {
     return (
       <div className="fixed inset-0 -z-10 bg-gradient-to-tl from-black via-zinc-600/20 to-black" />
     );
   }
 
-  // Renderização final para Desktop
   return (
     <Suspense
       fallback={
@@ -173,12 +150,21 @@ const AnimatedBackground = () => {
           setSplineApp(app);
           bypassLoading();
         }}
-        // Adicionando os listeners de interação aqui
-        onKeyDown={(e) => {
-          const skill = SKILLS[e.target.name as SkillNames];
-          if (skill) setSelectedSkill(skill);
+        // CORREÇÃO: Movendo a lógica de interação para os eventos do Spline
+        onKeyDown={(e: SplineEvent) => {
+          const target = e.target as { name: string }; // Dizendo ao TypeScript que target tem 'name'
+          const skill = SKILLS[target.name as SkillNames];
+          if (skill) {
+            setSelectedSkill(skill);
+            splineApp?.setVariable("heading", skill.label);
+            splineApp?.setVariable("desc", skill.shortDescription);
+          }
         }}
-        onKeyUp={() => setSelectedSkill(null)}
+        onKeyUp={() => {
+          setSelectedSkill(null);
+          splineApp?.setVariable("heading", "");
+          splineApp?.setVariable("desc", "");
+        }}
         scene="/assets/skills-keyboard.spline"
       />
     </Suspense>
