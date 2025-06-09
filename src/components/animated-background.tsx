@@ -57,7 +57,6 @@ const AnimatedBackground = () => {
   const splineContainer = useRef<HTMLDivElement>(null);
   const [splineApp, setSplineApp] = useState<Application>();
   const [activeSection, setActiveSection] = useState<Section>("hero");
-  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [keyboardRevealed, setKeyboardRevealed] = useState(false);
   const router = useRouter();
 
@@ -70,30 +69,10 @@ const AnimatedBackground = () => {
     [router]
   );
 
-  const handleSplineInteractions = useCallback((spline: Application) => {
-    const handleMouseHover = (e: SplineEvent) => {
-      if (e.target.name === "body" || e.target.name === "platform") {
-        setSelectedSkill(null);
-        spline.setVariable("heading", "");
-        spline.setVariable("desc", "");
-      } else {
-        const skill = SKILLS[e.target.name as SkillNames];
-        if (skill) {
-          setSelectedSkill(skill);
-          spline.setVariable("heading", skill.label);
-          spline.setVariable("desc", skill.shortDescription);
-        }
-      }
-    };
-    spline.addEventListener("mouseHover", handleMouseHover);
-    return () => {
-      spline.removeEventListener("mouseHover", handleMouseHover);
-    };
-  }, []);
-
+  // Função que faz os ícones aparecerem
   const revealKeyCaps = useCallback(
     async (spline: Application) => {
-      if (keyboardRevealed) return;
+      if (keyboardRevealed || isMobile) return;
       const kbd = spline.findObjectByName("keyboard");
       if (!kbd) return;
 
@@ -112,31 +91,31 @@ const AnimatedBackground = () => {
         }
       );
 
-      const allKeycaps = Object.keys(SKILLS);
-      allKeycaps.forEach(async (keyName, idx) => {
-        const keycap = spline.findObjectByName(keyName);
+      // CORREÇÃO: Usar Object.values para pegar o nome correto da skill
+      Object.values(SKILLS).forEach(async (skill, idx) => {
+        const keycap = spline.findObjectByName(skill.name);
         if (keycap) {
-          await sleep(idx * 70);
+          await sleep(idx * 50);
           keycap.visible = true;
           gsap.fromTo(
             keycap.position,
             { y: 200 },
-            { y: 50, duration: 0.5, delay: 0.1, ease: "bounce.out" }
+            { y: 50, duration: 0.5, delay: 0.05, ease: "bounce.out" }
           );
         }
       });
     },
-    [keyboardRevealed]
+    [keyboardRevealed, isMobile]
   );
 
+  // Efeito principal que inicializa tudo
   useEffect(() => {
     if (splineApp && !isLoading) {
-      const cleanup = handleSplineInteractions(splineApp);
       revealKeyCaps(splineApp);
-      return cleanup;
     }
-  }, [splineApp, isLoading, handleSplineInteractions, revealKeyCaps]);
+  }, [splineApp, isLoading, revealKeyCaps]);
 
+  // Efeito que controla as animações de rolagem
   useEffect(() => {
     if (isMobile || !splineApp) return;
     const keyboard = splineApp.findObjectByName("keyboard");
@@ -162,6 +141,7 @@ const AnimatedBackground = () => {
     }
   }, [activeSection, splineApp, isMobile]);
 
+  // Efeito que configura os gatilhos de rolagem
   useEffect(() => {
     if (isMobile || !splineApp) return;
     const sections = [
