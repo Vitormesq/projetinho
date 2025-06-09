@@ -2,16 +2,16 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import React from "react";
-import { Button } from "@/components/ui/button"; // Corrigido para caminho absoluto
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { usePreloader } from "@/components/preloader"; // <<< CORREÇÃO PRINCIPAL AQUI
-import { BlurIn } from "@/components/reveal-animations"; // Corrigido para caminho absoluto
-import ScrollDownIcon from "@/components/scroll-down-icon"; // Corrigido para caminho absoluto
+import { usePreloader } from "@/components/preloader";
+import { BlurIn } from "@/components/reveal-animations";
+import ScrollDownIcon from "@/components/scroll-down-icon";
 import { SiGithub, SiLinkedin, SiInstagram } from "react-icons/si";
 import { config } from "@/data/config";
 
