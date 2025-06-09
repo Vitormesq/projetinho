@@ -207,7 +207,6 @@ const AnimatedBackground = () => {
       }
     >
       <Spline
-        ref={splineContainer}
         onLoad={(app: Application) => {
           setSplineApp(app);
           bypassLoading();
