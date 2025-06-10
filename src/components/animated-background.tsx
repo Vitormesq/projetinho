@@ -11,6 +11,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 const Spline = React.lazy(() => import("@splinetool/react-spline"));
 import { Skill, SkillNames, SKILLS } from "@/data/constants";
+import { sleep } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { usePreloader } from "./preloader";
 import { useRouter } from "next/navigation";
@@ -53,9 +54,11 @@ type Section = "hero" | "skills" | "projects" | "contact";
 const AnimatedBackground = () => {
   const { isLoading, bypassLoading } = usePreloader();
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const splineContainer = useRef<HTMLDivElement>(null);
   const [splineApp, setSplineApp] = useState<Application>();
   const [activeSection, setActiveSection] = useState<Section>("hero");
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
+  const [keyboardRevealed, setKeyboardRevealed] = useState(false);
   const router = useRouter();
 
   const handleSetActiveSection = useCallback(
@@ -67,17 +70,54 @@ const AnimatedBackground = () => {
     [router]
   );
 
-  // Efeitos e lógica...
+  // Função que revela as teclas com os ícones
+  const revealKeyCaps = useCallback(
+    async (spline: Application) => {
+      if (keyboardRevealed || isMobile) return;
+      const kbd = spline.findObjectByName("keyboard");
+      if (!kbd) return;
+
+      kbd.visible = true;
+      setKeyboardRevealed(true);
+
+      gsap.fromTo(
+        kbd.scale,
+        { x: 0.01, y: 0.01, z: 0.01 },
+        {
+          x: STATES.hero.desktop.scale.x,
+          y: STATES.hero.desktop.scale.y,
+          z: STATES.hero.desktop.scale.z,
+          duration: 1.5,
+          ease: "elastic.out(1, 0.6)",
+        }
+      );
+
+      Object.values(SKILLS).forEach(async (skill, idx) => {
+        const keycap = spline.findObjectByName(skill.name);
+        if (keycap) {
+          await sleep(idx * 50);
+          keycap.visible = true;
+          gsap.fromTo(
+            keycap.position,
+            { y: 200 },
+            { y: 50, duration: 0.5, delay: 0.05, ease: "bounce.out" }
+          );
+        }
+      });
+    },
+    [keyboardRevealed, isMobile]
+  );
+
+  // Efeito que inicializa tudo quando o Spline carrega
   useEffect(() => {
     if (splineApp && !isLoading) {
-      const keyboard = splineApp.findObjectByName("keyboard");
-      if (keyboard) keyboard.visible = true;
+      revealKeyCaps(splineApp);
     }
-  }, [splineApp, isLoading]);
+  }, [splineApp, isLoading, revealKeyCaps]);
 
+  // Efeito que move o teclado com a rolagem
   useEffect(() => {
     if (isMobile || !splineApp) return;
-
     const keyboard = splineApp.findObjectByName("keyboard");
     if (!keyboard) return;
 
@@ -101,6 +141,7 @@ const AnimatedBackground = () => {
     }
   }, [activeSection, splineApp, isMobile]);
 
+  // Efeito que define os gatilhos de rolagem
   useEffect(() => {
     if (isMobile || !splineApp) return;
     const sections = [
@@ -150,20 +191,19 @@ const AnimatedBackground = () => {
           setSplineApp(app);
           bypassLoading();
         }}
-        // CORREÇÃO: Movendo a lógica de interação para os eventos do Spline
         onKeyDown={(e: SplineEvent) => {
-          const target = e.target as { name: string }; // Dizendo ao TypeScript que target tem 'name'
+          const target = e.target as { name: string };
           const skill = SKILLS[target.name as SkillNames];
-          if (skill) {
-            setSelectedSkill(skill);
-            splineApp?.setVariable("heading", skill.label);
-            splineApp?.setVariable("desc", skill.shortDescription);
+          if (skill && splineApp) {
+            splineApp.setVariable("heading", skill.label);
+            splineApp.setVariable("desc", skill.shortDescription);
           }
         }}
         onKeyUp={() => {
-          setSelectedSkill(null);
-          splineApp?.setVariable("heading", "");
-          splineApp?.setVariable("desc", "");
+          if (splineApp) {
+            splineApp.setVariable("heading", "");
+            splineApp.setVariable("desc", "");
+          }
         }}
         scene="/assets/skills-keyboard.spline"
       />
