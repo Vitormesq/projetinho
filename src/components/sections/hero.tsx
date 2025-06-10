@@ -1,17 +1,15 @@
-"use client";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/button";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { usePreloader } from "@/components/preloader";
-import { BlurIn } from "@/components/reveal-animations";
-import ScrollDownIcon from "@/components/scroll-down-icon";
+import { usePreloader } from "../preloader";
+import { BlurIn, BoxReveal } from "../reveal-animations";
+import ScrollDownIcon from "../scroll-down-icon";
 import { SiGithub, SiLinkedin, SiInstagram } from "react-icons/si";
 import { config } from "@/data/config";
 
@@ -44,29 +42,27 @@ const HeroSection = () => {
                   </p>
                 </BlurIn>
                 <BlurIn delay={1}>
-                  <TooltipProvider>
-                    <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                        <h1
-                          className={cn(
-                            "font-thin text-6xl text-transparent text-slate-800 ml-1 text-left",
-                            "cursor-default text-edge-outline font-display sm:text-7xl md:text-9xl "
-                          )}
-                        >
-                          {config.author.split(" ")[0]}
-                          <br className="md:block hidden" />
-                          {config.author.split(" ")[1]}
-                        </h1>
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="top"
-                        className="dark:bg-white dark:text-black"
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <h1
+                        className={cn(
+                          "font-thin text-6xl text-transparent text-slate-800 ml-1 text-left",
+                          "cursor-default text-edge-outline font-display sm:text-7xl md:text-9xl "
+                        )}
                       >
-                        Tem algo esperando por você nas ferramentas de
-                        desenvolvedor
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                        {config.author.split(" ")[0]}
+                        <br className="md:block hidden" />
+                        {config.author.split(" ")[1]}
+                      </h1>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="top"
+                      className="dark:bg-white dark:text-black"
+                    >
+                      Tem algo esperando por você nas ferramentas de
+                      desenvolvedor
+                    </TooltipContent>
+                  </Tooltip>
                 </BlurIn>
                 <BlurIn delay={1.2}>
                   <p
@@ -75,29 +71,28 @@ const HeroSection = () => {
                       "cursor-default font-display sm:text-xl md:text-xl whitespace-nowrap bg-clip-text "
                     )}
                   >
-                    Desenvolvedor
+                    Entusiasta de DevOps
                   </p>
                 </BlurIn>
               </div>
               <div className="mt-8 md:ml-2 flex flex-col gap-3">
+                {/* BOTÃO DO CURRÍCULO REMOVIDO DAQUI */}
                 <div className="md:self-start flex gap-3">
-                  <TooltipProvider>
-                    <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                        <Link href={"#contact"}>
-                          <Button
-                            variant={"outline"}
-                            className="block w-full overflow-hidden"
-                          >
-                            Contrate-me
-                          </Button>
-                        </Link>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p>por favor 🙏</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <Link href={"#contact"}>
+                        <Button
+                          variant={"outline"}
+                          className="block w-full overflow-hidden"
+                        >
+                          Contrate-me
+                        </Button>
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>por favor 🙏</p>
+                    </TooltipContent>
+                  </Tooltip>
                   <Link href={config.social.github} target="_blank">
                     <Button variant={"outline"}>
                       <SiGithub size={24} />
