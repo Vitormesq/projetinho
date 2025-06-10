@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter, Archivo_Black } from "next/font/google";
 import "./globals.css";
 import ElasticCursor from "@/components/ui/ElasticCursor";
-import Particles from "@/components/Particles";
 import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/header/header";
 import { Toaster } from "@/components/ui/toaster";
@@ -14,6 +13,7 @@ import EasterEggs from "@/components/easter-eggs";
 import { config } from "@/data/config";
 import SocketContextProvider from "@/contexts/socketio";
 import RemoteCursors from "@/components/realtime/remote-cursors";
+import ConditionalParticles from "@/components/ConditionalParticles"; // <-- IMPORTAÇÃO NOVA
 
 export const metadata: Metadata = {
   title: config.title,
@@ -64,7 +64,6 @@ export default function RootLayout({
           src={process.env.UMAMI_DOMAIN}
           data-website-id={process.env.UMAMI_SITE_ID}
         ></Script>
-        {/* <Analytics /> */}
       </head>
       <body>
         <ThemeProvider
@@ -72,10 +71,9 @@ export default function RootLayout({
           defaultTheme="dark"
           disableTransitionOnChange
         >
-          <Particles
-            className="fixed inset-0 -z-10 animate-fade-in"
-            quantity={100}
-          />
+          {/* A LINHA ABAIXO FOI TROCADA */}
+          <ConditionalParticles />
+
           <Preloader>
             <SocketContextProvider>
               <RemoteCursors />
