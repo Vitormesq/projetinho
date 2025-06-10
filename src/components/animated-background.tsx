@@ -1,130 +1,214 @@
 "use client";
-import { cn } from "@/lib/utils";
-import Link from "next/link";
-import React from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { usePreloader } from "@/components/preloader";
-import { BlurIn } from "@/components/reveal-animations"; // <--- Importa o BlurIn daqui
-import ScrollDownIcon from "@/components/scroll-down-icon";
-import { SiGithub, SiLinkedin, SiInstagram } from "react-icons/si";
-import { config } from "@/data/config";
+import React, {
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
+import { Application, SPEObject, SplineEvent } from "@splinetool/runtime";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+const Spline = React.lazy(() => import("@splinetool/react-spline"));
+import { Skill, SkillNames, SKILLS } from "@/data/constants";
+import { sleep } from "@/lib/utils";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { usePreloader } from "./preloader";
+import { useRouter } from "next/navigation";
 
-const HeroSection = () => {
-  const { isLoading } = usePreloader();
+gsap.registerPlugin(ScrollTrigger);
+
+const STATES = {
+  hero: {
+    desktop: {
+      scale: { x: 0.25, y: 0.25, z: 0.25 },
+      position: { x: 400, y: -200, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+    },
+  },
+  skills: {
+    desktop: {
+      scale: { x: 0.4, y: 0.4, z: 0.4 },
+      position: { x: 0, y: -40, z: 0 },
+      rotation: { x: 0, y: Math.PI / 12, z: 0 },
+    },
+  },
+  projects: {
+    desktop: {
+      scale: { x: 0.3, y: 0.3, z: 0.3 },
+      position: { x: 0, y: -40, z: 0 },
+      rotation: { x: Math.PI, y: Math.PI / 3, z: Math.PI },
+    },
+  },
+  contact: {
+    desktop: {
+      scale: { x: 0.3, y: 0.3, z: 0.3 },
+      position: { x: 500, y: -250, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+    },
+  },
+};
+
+type Section = "hero" | "skills" | "projects" | "contact";
+
+const AnimatedBackground = () => {
+  const { isLoading, bypassLoading } = usePreloader();
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const splineContainer = useRef<HTMLDivElement>(null);
+  const [splineApp, setSplineApp] = useState<Application>();
+  const [activeSection, setActiveSection] = useState<Section>("hero");
+  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
+  const [keyboardRevealed, setKeyboardRevealed] = useState(false);
+  const router = useRouter();
+
+  const handleSetActiveSection = useCallback(
+    (section: Section) => {
+      setActiveSection(section);
+      const hash = section === "hero" ? "" : `#${section}`;
+      router.push("/" + hash, { scroll: false });
+    },
+    [router]
+  );
+
+  // Função que revela as teclas com os ícones
+  const revealKeyCaps = useCallback(
+    async (spline: Application) => {
+      if (keyboardRevealed || isMobile) return;
+      const kbd = spline.findObjectByName("keyboard");
+      if (!kbd) return;
+
+      kbd.visible = true;
+      setKeyboardRevealed(true);
+
+      gsap.fromTo(
+        kbd.scale,
+        { x: 0.01, y: 0.01, z: 0.01 },
+        {
+          x: STATES.hero.desktop.scale.x,
+          y: STATES.hero.desktop.scale.y,
+          z: STATES.hero.desktop.scale.z,
+          duration: 1.5,
+          ease: "elastic.out(1, 0.6)",
+        }
+      );
+
+      Object.values(SKILLS).forEach(async (skill, idx) => {
+        const keycap = spline.findObjectByName(skill.name);
+        if (keycap) {
+          await sleep(idx * 50);
+          keycap.visible = true;
+          gsap.fromTo(
+            keycap.position,
+            { y: 200 },
+            { y: 50, duration: 0.5, delay: 0.05, ease: "bounce.out" }
+          );
+        }
+      });
+    },
+    [keyboardRevealed, isMobile]
+  );
+
+  // Efeito que inicializa tudo quando o Spline carrega
+  useEffect(() => {
+    if (splineApp && !isLoading) {
+      revealKeyCaps(splineApp);
+    }
+  }, [splineApp, isLoading, revealKeyCaps]);
+
+  // Efeito que move o teclado com a rolagem
+  useEffect(() => {
+    if (isMobile || !splineApp) return;
+    const keyboard = splineApp.findObjectByName("keyboard");
+    if (!keyboard) return;
+
+    const targetState = STATES[activeSection]?.desktop;
+    if (targetState) {
+      gsap.to(keyboard.scale, {
+        ...targetState.scale,
+        duration: 1.5,
+        ease: "power3.inOut",
+      });
+      gsap.to(keyboard.position, {
+        ...targetState.position,
+        duration: 1.5,
+        ease: "power3.inOut",
+      });
+      gsap.to(keyboard.rotation, {
+        ...targetState.rotation,
+        duration: 1.5,
+        ease: "power3.inOut",
+      });
+    }
+  }, [activeSection, splineApp, isMobile]);
+
+  // Efeito que define os gatilhos de rolagem
+  useEffect(() => {
+    if (isMobile || !splineApp) return;
+    const sections = [
+      {
+        id: "#skills",
+        onEnter: () => handleSetActiveSection("skills"),
+        onLeaveBack: () => handleSetActiveSection("hero"),
+      },
+      {
+        id: "#projects",
+        onEnter: () => handleSetActiveSection("projects"),
+        onLeaveBack: () => handleSetActiveSection("skills"),
+      },
+      {
+        id: "#contact",
+        onEnter: () => handleSetActiveSection("contact"),
+        onLeaveBack: () => handleSetActiveSection("projects"),
+      },
+    ];
+    const triggers = sections.map(({ id, onEnter, onLeaveBack }) => {
+      return ScrollTrigger.create({
+        trigger: id,
+        start: "top center",
+        onEnter,
+        onLeaveBack,
+      });
+    });
+    return () => {
+      triggers.forEach((trigger) => trigger.kill());
+    };
+  }, [splineApp, isMobile, handleSetActiveSection]);
+
+  if (isMobile) {
+    return (
+      <div className="fixed inset-0 -z-10 bg-gradient-to-tl from-black via-zinc-600/20 to-black" />
+    );
+  }
 
   return (
-    <section id="hero" className={cn("relative w-full h-screen")}>
-      <div className="grid md:grid-cols-2">
-        <div
-          className={cn(
-            "h-[calc(100dvh-3rem)] md:h-[calc(100dvh-4rem)] z-[2]",
-            "col-span-1",
-            "flex flex-col justify-start md:justify-center items-center md:items-start",
-            "pt-28 sm:pt-0 sm:pb-32 md:p-24 lg:p-40 xl:p-48"
-          )}
-        >
-          {!isLoading && (
-            <>
-              <div className="">
-                <BlurIn delay={0.7}>
-                  <p
-                    className={cn(
-                      "md:self-start mt-4 font-thin text-md text-slate-500 dark:text-zinc-400 ml-3",
-                      "cursor-default font-display sm:text-xl md:text-xl whitespace-nowrap bg-clip-text "
-                    )}
-                  >
-                    Olá, eu sou
-                    <br className="md:hidden" />
-                  </p>
-                </BlurIn>
-                <BlurIn delay={1}>
-                  <TooltipProvider>
-                    <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                        <h1
-                          className={cn(
-                            "font-thin text-6xl text-transparent text-slate-800 ml-1 text-left",
-                            "cursor-default text-edge-outline font-display sm:text-7xl md:text-9xl "
-                          )}
-                        >
-                          {config.author.split(" ")[0]}
-                          <br className="md:block hidden" />
-                          {config.author.split(" ")[1]}
-                        </h1>
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="top"
-                        className="dark:bg-white dark:text-black"
-                      >
-                        Tem algo esperando por você nas ferramentas de
-                        desenvolvedor
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </BlurIn>
-                <BlurIn delay={1.2}>
-                  <p
-                    className={cn(
-                      "md:self-start md:mt-4 font-thin text-md text-slate-500 dark:text-zinc-400 ml-3",
-                      "cursor-default font-display sm:text-xl md:text-xl whitespace-nowrap bg-clip-text "
-                    )}
-                  >
-                    Desenvolvedor
-                  </p>
-                </BlurIn>
-              </div>
-              <div className="mt-8 md:ml-2 flex flex-col gap-3">
-                <div className="md:self-start flex gap-3">
-                  <TooltipProvider>
-                    <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                        <Link href={"#contact"}>
-                          <Button
-                            variant={"outline"}
-                            className="block w-full overflow-hidden"
-                          >
-                            Contrate-me
-                          </Button>
-                        </Link>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p>por favor 🙏</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <Link href={config.social.github} target="_blank">
-                    <Button variant={"outline"}>
-                      <SiGithub size={24} />
-                    </Button>
-                  </Link>
-                  <Link href={config.social.linkedin} target="_blank">
-                    <Button variant={"outline"}>
-                      <SiLinkedin size={24} />
-                    </Button>
-                  </Link>
-                  <Link href={config.social.instagram} target="_blank">
-                    <Button variant={"outline"}>
-                      <SiInstagram size={24} />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-        <div className="grid col-span-1"></div>
-      </div>
-      <div className="absolute bottom-10 left-[50%] translate-x-[-50%]">
-        <ScrollDownIcon />
-      </div>
-    </section>
+    <Suspense
+      fallback={
+        <div className="fixed inset-0 -z-10 bg-gradient-to-tl from-black via-zinc-600/20 to-black" />
+      }
+    >
+      <Spline
+        onLoad={(app: Application) => {
+          setSplineApp(app);
+          bypassLoading();
+        }}
+        onKeyDown={(e: SplineEvent) => {
+          const target = e.target as { name: string };
+          const skill = SKILLS[target.name as SkillNames];
+          if (skill && splineApp) {
+            splineApp.setVariable("heading", skill.label);
+            splineApp.setVariable("desc", skill.shortDescription);
+          }
+        }}
+        onKeyUp={() => {
+          if (splineApp) {
+            splineApp.setVariable("heading", "");
+            splineApp.setVariable("desc", "");
+          }
+        }}
+        scene="/assets/skills-keyboard.spline"
+      />
+    </Suspense>
   );
 };
 
-export default HeroSection;
+export default AnimatedBackground;
